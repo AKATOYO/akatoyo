@@ -79,9 +79,52 @@ const filtro = productos.filter(p=>p.name.toLowerCase().includes(e.target.value.
 render(filtro);
 });
 </script>
+  <!-- INTEGRACIÓN SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = https://yliohprzqxzpyyrpvlvh.supabase.co';
+    const supabaseKey = 'sb_publishable_jWnZtBxthINwZnn2NDS6wg_wour17Cc';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/script.js"></script>
-  
+    async function cargarDesdeSupabase() {
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) return console.error(error);
+
+      const productosMap = data.map(p => ({
+        name: p.nombre,
+        price: p.precio,
+        img: p.imagen_url || 'https://via.placeholder.com/300x180?text=Producto',
+        desc: p.descripcion || ''
+      }));
+
+      productos.length = 0;
+      productos.push(...productosMap);
+      render(productos);
+    }
+
+    cargarDesdeSupabase();
+  </script>
 </body>
 </html>
+
+<!-- SQL PARA SUPABASE -->
+-- Tabla usuarios
+create table usuarios (
+  id uuid primary key default gen_random_uuid(),
+  nombre text,
+  email text unique,
+  telefono text
+);
+
+-- Tabla pedidos
+create table pedidos (
+  id uuid primary key default gen_random_uuid(),
+  usuario_id uuid references usuarios(id),
+  producto_id bigint references productos(id),
+  cantidad int default 1,
+  fecha timestamp default now(),
+  estado text default 'pendiente'
+);
+
+-- Sugerencia: activa Row Level Security y policy de lectura pública para productos.
+
