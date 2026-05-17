@@ -1,5 +1,5 @@
-const supabaseUrl = 'https://TU-PROYECTO.supabase.co';
-const supabaseKey = 'TU_ANON_KEY';
+const supabaseUrl = 'https://yliohprzqxzpyyrpvlvh.supabase.co';
+const supabaseKey = 'sb_publishable_jWnZtBxthINwZnn2NDS6wg_wour17Cc';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const contenedor = document.getElementById('productos');
