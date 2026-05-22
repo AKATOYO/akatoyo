@@ -1,132 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marketplace MultiProductos</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#f3f4f6;color:#111827}
-header{background:#131921;color:white;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
-.logo{font-size:1.8rem;font-weight:bold;color:#f59e0b}
-.search{flex:1;max-width:500px;margin:10px 20px}
-.search input{width:100%;padding:12px;border:none;border-radius:8px}
-nav{background:#232f3e;padding:12px;text-align:center}
-nav a{color:white;text-decoration:none;margin:0 12px;font-weight:bold}
-.hero{background:linear-gradient(90deg,#dbeafe,#fef3c7);padding:50px 20px;text-align:center}
-.hero h1{font-size:3rem;margin-bottom:10px}
-.container{max-width:1300px;margin:auto;padding:30px 20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
-.card{background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.08);transition:.3s}
-.card:hover{transform:scale(1.03)}
-.card img{width:100%;height:180px;object-fit:cover}
-.card-content{padding:15px}
-.price{color:#059669;font-size:1.3rem;font-weight:bold;margin:8px 0}
-button{background:#f59e0b;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;font-weight:bold}
-button:hover{background:#d97706}
-footer{background:#111827;color:white;text-align:center;padding:20px;margin-top:30px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Profesional</title>
+    
+    <!-- Cargar Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Enlazar CSS -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<header>
-<div class="logo">MultiMarket</div>
-<div class="search"><input type="text" id="buscador" placeholder="Buscar productos..."></div>
-<div>🛒 Carrito (<span id="contador">0</span>)</div>
-</header>
 
-<nav>
-<a href="#">Inicio</a>
-<a href="#">Ofertas</a>
-<a href="#">Categorías</a>
-<a href="#">Contacto</a>
-</nav>
+    <!-- Encabezado fijo con buscador y carrito -->
+    <div class="header-fijo">
+        <input id="busqueda" type="text" placeholder="Buscar por nombre, descripción o categoría...">
+        <select id="filtroCategoria">
+            <option value="">Todas las categorías</option>
+        </select>
+        <button id="btnCarrito">🛒 <span id="contador">0</span></button>
+    </div>
 
-<section class="hero">
-<h1>Compra como en Amazon o Mercado Libre</h1>
-<p>Explora miles de productos en una experiencia moderna y rápida</p>
-</section>
+    <!-- Listado de productos -->
+    <h1>Catálogo de Productos</h1>
+    <div id="productos" class="grid"></div>
 
-<div class="container">
-<div class="grid" id="productos"></div>
-</div>
+    <!-- Panel lateral del Carrito -->
+    <div id="carrito" class="carrito-panel">
+        <h2 id="numCot"></h2>
 
-<footer>
-<p>© 2026 MultiMarket | Marketplace profesional</p>
-</footer>
+        <div class="cliente">
+            <input id="nombreCliente" type="text" placeholder="Nombre">
+            <input id="telefonoCliente" type="text" placeholder="Teléfono">
+            <textarea id="observacionesCliente" placeholder="Dirección / observaciones" rows="3"></textarea>
+        </div>
 
-<script>
-const productos = [
-{name:'Máquina industrial', price:1200, img:'https://via.placeholder.com/300x180?text=Maquina'},
-{name:'Repuesto motor', price:80, img:'https://via.placeholder.com/300x180?text=Repuesto'},
-{name:'Cacao premium', price:25, img:'https://via.placeholder.com/300x180?text=Cacao'},
-{name:'Café orgánico', price:18, img:'https://via.placeholder.com/300x180?text=Cafe'},
-{name:'Software empresarial', price:250, img:'https://via.placeholder.com/300x180?text=Software'},
-{name:'Zapatos cuero', price:60, img:'https://via.placeholder.com/300x180?text=Zapatos'}
-];
-let carrito = 0;
-const cont = document.getElementById('productos');
-const contador = document.getElementById('contador');
-function render(lista){
-cont.innerHTML='';
-lista.forEach(p=>{
-cont.innerHTML += `<div class="card"><img src="${p.img}"><div class="card-content"><h3>${p.name}</h3><div class="price">$${p.price}</div><button onclick="agregar()">Agregar al carrito</button></div></div>`;
-});
-}
-function agregar(){carrito++;contador.textContent=carrito;}
-render(productos);
-document.getElementById('buscador').addEventListener('input',e=>{
-const filtro = productos.filter(p=>p.name.toLowerCase().includes(e.target.value.toLowerCase()));
-render(filtro);
-});
-</script>
-  <!-- INTEGRACIÓN SUPABASE -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const supabaseUrl = https://yliohprzqxzpyyrpvlvh.supabase.co';
-    const supabaseKey = 'sb_publishable_jWnZtBxthINwZnn2NDS6wg_wour17Cc';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cant.</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="detalle-carrito"></tbody>
+        </table>
 
-    async function cargarDesdeSupabase() {
-      const { data, error } = await supabase.from('productos').select('*');
-      if (error) return console.error(error);
+        <div class="totales">
+            <p>Subtotal: <span id="subtotal">$0</span></p>
+            <p>IVA (19%): <span id="iva">$0</span></p>
+            <h3>Total: <span id="total">$0</span></h3>
+        </div>
 
-      const productosMap = data.map(p => ({
-        name: p.nombre,
-        price: p.precio,
-        img: p.imagen_url || 'https://via.placeholder.com/300x180?text=Producto',
-        desc: p.descripcion || ''
-      }));
+        <div class="botones">
+            <button class="btn-success" onclick="enviarWhatsApp()">Enviar WhatsApp</button>
+            <button onclick="window.print()">Imprimir PDF</button>
+            <button class="btn-danger" onclick="vaciarCarrito()">Vaciar</button>
+            <button class="btn-cerrar" onclick="toggleCarrito()">Cerrar</button>
+        </div>
+    </div>
 
-      productos.length = 0;
-      productos.push(...productosMap);
-      render(productos);
-    }
-
+    <!-- Notificación Toast -->
+    <div id="toast" class="toast"></div>
     
-<!-- SQL PARA SUPABASE -->
--- Tabla usuarios
-create table usuarios (
-  id uuid primary key default gen_random_uuid(),
-  nombre text,
-  email text unique,
-  telefono text
-);
-
--- Tabla pedidos
-create table pedidos (
-  id uuid primary key default gen_random_uuid(),
-  usuario_id uuid references usuarios(id),
-  producto_id bigint references productos(id),
-  cantidad int default 1,
-  fecha timestamp default now(),
-  estado text default 'pendiente'
-);
-
--- Sugerencia: activa Row Level Security y policy de lectura pública para productos.
-
-
-    cargarDesdeSupabase();
-  </script>
+    <!-- Enlazar JavaScript -->
+    <script src="js/app.js"></script>
+    
 </body>
 </html>
-
