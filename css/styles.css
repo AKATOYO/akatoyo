@@ -1,13 +1,25 @@
-/* Variables de colores */
+/* =========================================
+   1. VARIABLES CSS (Paleta de colores)
+   ========================================= */
 :root {
-    --primary: #2563eb;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --bg: #f8fafc;
-    --text: #1e293b;
-    --border: #e2e8f0;
+    --primary: #2563eb;       /* Azul principal */
+    --primary-hover: #1d4ed8; /* Azul oscuro al pasar el ratón */
+    --success: #16a34a;       /* Verde para WhatsApp */
+    --success-hover: #15803d; /* Verde oscuro */
+    --danger: #dc2626;        /* Rojo para vaciar/eliminar */
+    --danger-hover: #b91c1c;  /* Rojo oscuro */
+    --secondary: #475569;     /* Gris para cerrar */
+    --secondary-hover: #334155; /* Gris oscuro */
+    --bg-body: #f8fafc;       /* Fondo de la página */
+    --bg-card: #ffffff;       /* Fondo de las tarjetas */
+    --text-main: #1e293b;     /* Texto principal */
+    --text-muted: #64748b;    /* Texto secundario */
+    --border: #e2e8f0;        /* Bordes suaves */
 }
 
+/* =========================================
+   2. RESET Y ESTILOS GLOBALES
+   ========================================= */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -16,18 +28,20 @@
 }
 
 body {
-    background-color: var(--bg);
-    color: var(--text);
+    background-color: var(--bg-body);
+    color: var(--text-main);
     padding-top: 80px; /* Espacio para el header fijo */
 }
 
-/* Header Fijo */
+/* =========================================
+   3. HEADER FIJO (Búsqueda y Carrito)
+   ========================================= */
 .header-fijo {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: white;
+    background: var(--bg-card);
     padding: 15px 20px;
     display: flex;
     gap: 15px;
@@ -41,14 +55,16 @@ body {
     border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 16px;
+    background-color: var(--bg-body);
+    color: var(--text-main);
 }
 
 .header-fijo input { flex-grow: 1; }
-.header-fijo select { min-width: 180px; }
+.header-fijo select { min-width: 180px; cursor: pointer; }
 
 #btnCarrito {
     background: var(--primary);
-    color: white;
+    color: #ffffff !important; /* Forzamos texto blanco */
     border: none;
     padding: 10px 15px;
     border-radius: 6px;
@@ -56,10 +72,14 @@ body {
     font-size: 18px;
     font-weight: bold;
     position: relative;
+    transition: background 0.2s;
 }
+
+#btnCarrito:hover { background: var(--primary-hover); }
 
 #contador {
     background: var(--danger);
+    color: #ffffff !important;
     border-radius: 50%;
     padding: 2px 6px;
     font-size: 12px;
@@ -68,8 +88,11 @@ body {
     right: -5px;
 }
 
-/* Grid de Productos */
-h1 { text-align: center; margin: 20px 0; }
+/* =========================================
+   4. GRID DE PRODUCTOS
+   ========================================= */
+h1 { text-align: center; margin: 20px 0; color: var(--text-main); }
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -78,7 +101,7 @@ h1 { text-align: center; margin: 20px 0; }
 }
 
 .producto {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 15px;
@@ -90,7 +113,7 @@ h1 { text-align: center; margin: 20px 0; }
     transition: transform 0.2s;
 }
 
-.producto:hover { transform: translateY(-5px); }
+.producto:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
 .producto img {
     width: 100%;
@@ -98,6 +121,7 @@ h1 { text-align: center; margin: 20px 0; }
     object-fit: contain;
     margin-bottom: 10px;
     border-radius: 6px;
+    background-color: #ffffff; /* Fondo blanco por si la imagen tiene transparencia */
 }
 
 .producto .categoria {
@@ -111,31 +135,36 @@ h1 { text-align: center; margin: 20px 0; }
     margin-bottom: 10px;
 }
 
-.producto h3 { font-size: 18px; margin-bottom: 5px; }
-.producto p { font-size: 14px; color: #64748b; margin-bottom: 15px; flex-grow: 1; }
+.producto h3 { font-size: 18px; margin-bottom: 5px; color: var(--text-main); }
+.producto p { font-size: 14px; color: var(--text-muted); margin-bottom: 15px; flex-grow: 1; }
 .producto strong { font-size: 20px; color: var(--primary); margin-bottom: 15px; }
 
+/* Botón Agregar (Dentro de la tarjeta de producto) */
 .producto button {
     width: 100%;
     padding: 10px;
-    background: var(--primary);
-    color: white;
+    background-color: var(--primary);
+    color: #ffffff !important; /* Aseguramos texto blanco */
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 16px;
+    transition: background 0.2s;
 }
 
-.producto button:hover { background: #1d4ed8; }
+.producto button:hover { background-color: var(--primary-hover); }
 
-/* Panel del Carrito */
+/* =========================================
+   5. PANEL LATERAL DEL CARRITO
+   ========================================= */
 .carrito-panel {
     position: fixed;
     top: 0;
     right: -450px; /* Oculto por defecto */
     width: 420px;
     height: 100vh;
-    background: white;
+    background: var(--bg-card);
     box-shadow: -5px 0 15px rgba(0,0,0,0.2);
     z-index: 2000;
     padding: 20px;
@@ -156,6 +185,9 @@ h1 { text-align: center; margin: 20px 0; }
     padding: 10px;
     border: 1px solid var(--border);
     border-radius: 6px;
+    font-size: 14px;
+    color: var(--text-main);
+    background-color: #ffffff;
 }
 
 .carrito-panel table {
@@ -169,26 +201,86 @@ h1 { text-align: center; margin: 20px 0; }
     border-bottom: 1px solid var(--border);
     text-align: left;
     font-size: 14px;
+    color: var(--text-main);
 }
 
-.carrito-panel button { cursor: pointer; background: none; border: 1px solid #ccc; border-radius: 4px; padding: 2px 8px; }
+/* Botones +/- y ✕ dentro de la tabla del carrito */
+.carrito-panel table button {
+    cursor: pointer;
+    background: var(--bg-body);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: var(--text-main);
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.carrito-panel table button:hover {
+    background: var(--border);
+}
 
 .totales { text-align: right; margin-bottom: 20px; }
-.totales p { margin-bottom: 5px; }
-.totales h3 { color: var(--primary); }
+.totales p { margin-bottom: 5px; color: var(--text-muted); }
+.totales h3 { color: var(--primary); font-size: 24px; }
 
+/* =========================================
+   6. BOTONES DE ACCIÓN DEL CARRITO (SOLUCIÓN)
+   ========================================= */
 .botones { display: flex; flex-direction: column; gap: 10px; }
-.botones button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; color: white; }
-.btn-success { background: var(--success); }
-.btn-danger { background: var(--danger); }
-.btn-cerrar { background: #64748b; }
 
-/* Toast */
+/* Estilo Base para todos los botones de acción */
+.botones button {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    /* La lógica clave: forzamos el texto a blanco y declaramos fondo */
+    color: #ffffff !important; 
+}
+
+.botones button:active {
+    transform: scale(0.98); /* Efecto clic */
+}
+
+/* Lógica de colores específica por clase */
+.btn-success {
+    background-color: var(--success) !important; /* Verde WhatsApp */
+}
+.btn-success:hover { background-color: var(--success-hover) !important; }
+
+.btn-danger {
+    background-color: var(--danger) !important; /* Rojo Vaciar */
+}
+.btn-danger:hover { background-color: var(--danger-hover) !important; }
+
+.btn-cerrar {
+    background-color: var(--secondary) !important; /* Gris Cerrar */
+}
+.btn-cerrar:hover { background-color: var(--secondary-hover) !important; }
+
+/* Botón Imprimir PDF (Estilo outline/secundario para diferenciarlo) */
+.botones button:nth-child(2) {
+    background-color: transparent !important;
+    color: var(--text-main) !important; /* Texto oscuro para contraste */
+    border: 2px solid var(--border) !important;
+}
+.botones button:nth-child(2):hover {
+    background-color: var(--bg-body) !important;
+    border-color: var(--text-muted) !important;
+}
+
+/* =========================================
+   7. NOTIFICACIÓN TOAST
+   ========================================= */
 .toast {
     visibility: hidden;
     min-width: 250px;
     background-color: #333;
-    color: white;
+    color: #ffffff;
     text-align: center;
     border-radius: 6px;
     padding: 12px;
@@ -204,4 +296,16 @@ h1 { text-align: center; margin: 20px 0; }
 .toast.show {
     visibility: visible;
     opacity: 1;
+}
+
+/* =========================================
+   8. RESPONSIVE (Opcional pero recomendado)
+   ========================================= */
+@media (max-width: 600px) {
+    .header-fijo { flex-wrap: wrap; }
+    .header-fijo input { width: 100%; order: 1; }
+    .header-fijo select { width: 70%; order: 2; margin-top: 10px; }
+    #btnCarrito { width: 25%; order: 2; margin-top: 10px; }
+    
+    .carrito-panel { width: 100%; right: -100%; }
 }
