@@ -1,11 +1,13 @@
 // ==========================================
 // ⚠️ SECURITY WARNING ⚠️
 // 1. Ensure SUPABASE_KEY is your 'anon' (public) key, NOT a 'service_role' key.
-// 2. Client-side password checking (admin123) is highly insecure. 
+// 2. Client-side password checking (admin123) is highly insecure. Anyone can read the source code.
+//    Consider using Supabase Auth for admin actions.
 // ==========================================
 
 const SUPABASE_URL = 'https://yliohprzqxzpyyrpvlvh.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_jWnZtBxthINwZnn2NDS6wg_wour17Cc'; // VERIFY THIS IS YOUR ANON KEY!
+// FIX: Replace this with your actual 'anon' key (usually starts with 'eyJ...')
+const SUPABASE_KEY = 'YOUR_ACTUAL_ANON_KEY_HERE'; 
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -41,6 +43,12 @@ const nombreCliente = document.getElementById("nombreCliente");
 const telefonoCliente = document.getElementById("telefonoCliente");
 const observacionesCliente = document.getElementById("observacionesCliente");
 
+// FIX: Moved inline HTML onclick to event listeners
+document.getElementById("btnCloseCarrito").addEventListener("click", toggleCarrito);
+document.getElementById("btnCloseAdmin").addEventListener("click", toggleAdmin);
+document.getElementById("btnWhatsApp").addEventListener("click", enviarWhatsApp);
+document.getElementById("btnVaciar").addEventListener("click", vaciarCarrito);
+
 // Event Listeners
 btnCarrito.addEventListener("click", toggleCarrito);
 overlay.addEventListener("click", toggleCarrito);
@@ -48,24 +56,24 @@ btnAdmin.addEventListener("click", toggleAdmin);
 busqueda.addEventListener("input", filtrarProductos);
 filtroCategoria.addEventListener("change", filtrarProductos);
 formProducto.addEventListener("submit", agregarProductoDB);
+
 window.addEventListener('scroll', () => {
     btnTop.style.display = window.scrollY > 300 ? "block" : "none";
 });
 btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-// Initialize
-window.onload = () => {
+// FIX: Use DOMContentLoaded instead of window.onload for faster execution
+document.addEventListener('DOMContentLoaded', () => {
     numCot.textContent = "Cotización #" + Date.now().toString().slice(-6);
     cargarProductos().then(() => {
-        // Check if there is a product ID in the URL parameters to auto-scroll
         const params = new URLSearchParams(window.location.search);
         const productoId = params.get('producto');
         
         if (productoId) {
             setTimeout(() => {
-                const productoCard = document.querySelector(`[onclick="agregar(${productoId})"]`);
-                if (productoCard) {
-                    const cardContainer = productoCard.closest('.producto');
+                // FIX: Use data-id instead of querySelector based on onclick string
+                const cardContainer = document.querySelector(`.producto[data-id="${productoId}"]`);
+                if (cardContainer) {
                     cardContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     cardContainer.style.boxShadow = "0 0 15px rgba(0, 123, 255, 0.8)";
                     setTimeout(() => { cardContainer.style.boxShadow = ""; }, 3000);
@@ -74,7 +82,15 @@ window.onload = () => {
         }
     });
     actualizarCarrito();
-};
+});
+
+// --- SECURITY HELPER ---
+// Prevents Cross-Site Scripting (XSS) from malicious product names
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
 // --- PRODUCTS LOGIC ---
 async function cargarProductos() {
@@ -93,16 +109,29 @@ async function cargarProductos() {
     }
 
     productos = data || [];
+    sincronizarCarrito(); // FIX: Update prices of items already in cart
     cargarCategorias();
     renderProductos(productos);
-    return data; // Return for the .then() in window.onload
+    return data;
+}
+
+// FIX: Keep cart updated with latest DB prices if user reloads page
+function sincronizarCarrito() {
+    carrito = carrito.map(item => {
+        const dbProduct = productos.find(p => p.id === item.id);
+        if (dbProduct) {
+            return { ...item, precio: dbProduct.precio, nombre: dbProduct.nombre };
+        }
+        return item; // Keep item even if deleted from DB, could also filter it out
+    });
+    guardar();
 }
 
 function cargarCategorias() {
     const categorias = [...new Set(productos.map(p => p.categoria).filter(Boolean))];
     filtroCategoria.innerHTML = `
         <option value="">Todas las categorías</option>
-        ${categorias.map(c => `<option value="${c}">${c}</option>`).join('')}
+        ${categorias.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('')}
     `;
 }
 
@@ -112,29 +141,42 @@ function renderProductos(lista) {
         return;
     }
 
-    // ADDED: Share buttons inside product card
     productosDiv.innerHTML = lista.map(p => `
-        <div class="producto">
+        <div class="producto" data-id="${p.id}">
             <div class="img-container">
-                <img src="${p.imagen_url || 'https://via.placeholder.com/300x200?text=Sin+Imagen'}" alt="${p.nombre}" loading="lazy">
+                <img src="${escapeHTML(p.imagen_url || 'https://via.placeholder.com/300x200?text=Sin+Imagen')}" alt="${escapeHTML(p.nombre)}" loading="lazy">
             </div>
             <div class="producto-info">
-                <span class="categoria-badge">${p.categoria || 'Sin categoría'}</span>
-                <h3>${p.nombre}</h3>
-                <p>${p.descripcion || ''}</p>
+                <span class="categoria-badge">${escapeHTML(p.categoria || 'Sin categoría')}</span>
+                <h3>${escapeHTML(p.nombre)}</h3>
+                <p>${escapeHTML(p.descripcion || '')}</p>
                 <strong>${money.format(p.precio || 0)}</strong>
                 
                 <div class="producto-actions">
-                    <button onclick="agregar(${p.id})">Agregar</button>
+                    <button class="btn-agregar" data-id="${p.id}">Agregar</button>
                     <div class="share-buttons">
-                        <button class="btn-share whatsapp" onclick="compartirWhatsApp(${p.id})" title="Compartir en WhatsApp">💬</button>
-                        <button class="btn-share facebook" onclick="compartirFacebook(${p.id})" title="Compartir en Facebook">📘</button>
-                        <button class="btn-share copy" onclick="copiarEnlace(${p.id})" title="Copiar enlace">🔗</button>
+                        <button class="btn-share whatsapp" data-share="whatsapp" data-id="${p.id}" title="Compartir en WhatsApp">💬</button>
+                        <button class="btn-share facebook" data-share="facebook" data-id="${p.id}" title="Compartir en Facebook">📘</button>
+                        <button class="btn-share copy" data-share="copy" data-id="${p.id}" title="Copiar enlace">🔗</button>
                     </div>
                 </div>
             </div>
         </div>
     `).join('');
+
+    // FIX: Event Delegation for buttons instead of inline onclick
+    document.querySelectorAll('.btn-agregar').forEach(btn => {
+        btn.addEventListener('click', () => agregar(parseInt(btn.dataset.id)));
+    });
+    document.querySelectorAll('.btn-share').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = parseInt(btn.dataset.id);
+            const type = btn.dataset.share;
+            if (type === 'whatsapp') compartirWhatsApp(id);
+            else if (type === 'facebook') compartirFacebook(id);
+            else if (type === 'copy') copiarEnlace(id);
+        });
+    });
 }
 
 function filtrarProductos() {
@@ -173,17 +215,25 @@ function actualizarCarrito() {
         subtotal += total;
         return `
             <tr>
-                <td>${p.nombre}<br><small>${p.categoria || ''}</small></td>
+                <td>${escapeHTML(p.nombre)}<br><small>${escapeHTML(p.categoria || '')}</small></td>
                 <td>
-                    <button onclick="cambiar(${i},-1)">-</button>
+                    <button class="btn-cambiar" data-index="${i}" data-dir="-1">-</button>
                     ${p.cantidad}
-                    <button onclick="cambiar(${i},1)">+</button>
+                    <button class="btn-cambiar" data-index="${i}" data-dir="1">+</button>
                 </td>
                 <td>${money.format(total)}</td>
-                <td><button class="btn-danger" onclick="eliminar(${i})">✕</button></td>
+                <td><button class="btn-danger btn-eliminar" data-index="${i}">✕</button></td>
             </tr>
         `;
     }).join('');
+
+    // Event Delegation for Cart Buttons
+    detalleCarrito.querySelectorAll('.btn-cambiar').forEach(btn => {
+        btn.addEventListener('click', () => cambiar(parseInt(btn.dataset.index), parseInt(btn.dataset.dir)));
+    });
+    detalleCarrito.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', () => eliminar(parseInt(btn.dataset.index)));
+    });
 
     const iva = subtotal * 0.19;
     const total = subtotal + iva;
@@ -250,7 +300,7 @@ function enviarWhatsApp() {
     window.open(`https://wa.me/573192654225?text=${encodedMsg}`);
 }
 
-// --- SHARE LOGIC (NEW) ---
+// --- SHARE LOGIC ---
 function generarEnlaceProducto(productoId) {
     const baseUrl = window.location.href.split('?')[0];
     return `${baseUrl}?producto=${productoId}`;
@@ -292,6 +342,7 @@ function copiarEnlace(id) {
 function toggleAdmin() {
     const isActive = adminModal.classList.toggle("active");
     if (isActive) {
+        // SECURITY WARNING: Prompt password is unsafe
         const pass = prompt("Ingrese contraseña de administrador:");
         if (pass !== "admin123") { 
             toast("Contraseña incorrecta");
@@ -306,12 +357,17 @@ function renderAdminList() {
     adminLista.innerHTML = productos.map(p => `
         <div class="admin-item">
             <div class="admin-item-info">
-                <strong>${p.nombre}</strong> - ${money.format(p.precio)}<br>
-                <small>${p.categoria || 'Sin categoría'}</small>
+                <strong>${escapeHTML(p.nombre)}</strong> - ${money.format(p.precio)}<br>
+                <small>${escapeHTML(p.categoria || 'Sin categoría')}</small>
             </div>
-            <button class="btn-danger" onclick="eliminarProductoDB(${p.id})">Eliminar</button>
+            <button class="btn-danger btn-delete-db" data-id="${p.id}">Eliminar</button>
         </div>
     `).join('');
+
+    // Event Delegation for Delete Buttons
+    adminLista.querySelectorAll('.btn-delete-db').forEach(btn => {
+        btn.addEventListener('click', () => eliminarProductoDB(parseInt(btn.dataset.id)));
+    });
 }
 
 async function agregarProductoDB(e) {
