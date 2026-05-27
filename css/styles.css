@@ -11,11 +11,23 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Screen-reader only class for accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
 body {
     font-family: 'Segoe UI', sans-serif;
     background: var(--bg);
     color: var(--text);
-    padding: 120px 15px 20px; /* Adjusted for stacked header */
+    padding: 120px 15px 20px;
 }
 
 /* Header */
@@ -32,33 +44,36 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
 }
 
 .header-actions {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 #busqueda {
-    width: 60%;
     flex: 1;
     padding: 12px 18px;
     border: 2px solid var(--primary);
     border-radius: 30px;
     font-size: 15px;
     outline: none;
+    transition: box-shadow 0.3s ease;
+    min-width: 0; /* Prevents flex overflow */
 }
 
-#busqueda:focus { width: 30%; box-shadow: 0 0 5px rgba(19, 101, 232, 0.3); }
+#busqueda:focus { 
+    box-shadow: 0 0 5px rgba(19, 101, 232, 0.3); 
+}
 
 #filtroCategoria {
-    width: 60%;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 30px;
     outline: none;
     background: var(--white);
+    cursor: pointer;
 }
 
 #btnAdmin, #btnCarrito {
@@ -72,19 +87,21 @@ body {
     font-size: 16px;
     transition: background 0.3s;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 #btnAdmin:hover, #btnCarrito:hover { background: var(--primary-dark); }
 
 #contador {
-    position: absolute;
-    top: -5px; right: -5px;
     background: var(--danger);
     color: white;
     font-size: 11px;
     border-radius: 50%;
     padding: 2px 6px;
     font-weight: bold;
+    line-height: 1;
 }
 
 /* Main Grid */
@@ -103,7 +120,7 @@ h1 { text-align: center; color: var(--primary); margin: 20px 0; }
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,.06);
-    transition: .3s;
+    transition: transform .3s, box-shadow .3s;
     display: flex;
     flex-direction: column;
 }
@@ -180,7 +197,7 @@ h1 { text-align: center; color: var(--primary); margin: 20px 0; }
     height: 100%;
     background: var(--white);
     transform: translateX(100%);
-    transition: .3s ease;
+    transition: transform .3s ease;
     padding: 20px;
     overflow-y: auto;
     z-index: 2000;
@@ -213,17 +230,13 @@ h1 { text-align: center; color: var(--primary); margin: 20px 0; }
     font-family: inherit;
 }
 
-
-.nota{
+.nota {
     padding: 10px;
     border-radius: 8px;
-    cursor: pointer;
     color: white;
     background: var(--primary);
-    transition: opacity 0.2s;
+    margin-bottom: 15px;
 }
-
-
 
 table { width: 100%; border-collapse: collapse; margin: 20px 0; }
 th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
@@ -326,6 +339,7 @@ button:hover { opacity: 0.8; }
     opacity: 0;
     transition: .3s;
     z-index: 4000;
+    pointer-events: none;
 }
 
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -347,25 +361,11 @@ button:hover { opacity: 0.8; }
 
 /* Mobile Responsiveness */
 @media (max-width: 600px) {
-    .carrito {
-        max-width: 100%;
-    }
-    .header-top {
-        flex-wrap: wrap;
-    }
-    #busqueda {
-        width: 100%;
-        order: 2;
-    }
-    .header-actions {
-        width: 100%;
-        justify-content: space-between;
-        order: 1;
-        margin-bottom: 10px;
-    }
-    #btnAdmin, #btnCarrito {
-        flex: 1;
-    }
+    .carrito { max-width: 100%; }
+    .header-top { flex-wrap: wrap; }
+    #busqueda { width: 100%; order: 2; }
+    .header-actions { width: 100%; justify-content: space-between; order: 1; margin-bottom: 10px; }
+    #btnAdmin, #btnCarrito { flex: 1; }
 }
 
 /* Print Styles */
@@ -380,5 +380,5 @@ button:hover { opacity: 0.8; }
         box-shadow: none; transform: none;
     }
     .item-carrito { page-break-inside: avoid; }
+    .botones { display: none; } /* Hide buttons when printing */
 }
-
