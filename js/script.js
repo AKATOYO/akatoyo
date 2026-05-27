@@ -7,7 +7,7 @@
 
 const SUPABASE_URL = 'https://yliohprzqxzpyyrpvlvh.supabase.co';
 // FIX: Replace this with your actual 'anon' key (usually starts with 'eyJ...')
-const SUPABASE_KEY = 'YOUR_ACTUAL_ANON_KEY_HERE'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsaW9ocHJ6cXh6cHl5cnB2bHZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxOTIyNTcsImV4cCI6MjA5MTc2ODI1N30.vvWoWAnHbfmZMEDWTKV8aGs6OsTKjpMam1h2OXVCjQI'; 
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
