@@ -15,11 +15,9 @@
             <div class="header-actions">
                 <button id="btnAdmin" aria-label="Panel de Administrador" title="Admin">🔒</button>
                 <button id="btnCarrito" aria-label="Abrir carrito">🛒 <span id="contador">0</span></button>
-
-                       <select id="filtroCategoria" aria-label="Filtrar por categoría">
-                          <option value="">Todas las categorías</option>
-                      </select>
-                
+                <select id="filtroCategoria" aria-label="Filtrar por categoría">
+                    <option value="">Todas las categorías</option>
+                </select>
             </div>
         </div>
     </header>
@@ -34,15 +32,16 @@
     <aside id="carrito" class="carrito">
         <div class="carrito-header">
             <h2 id="numCot"></h2>
-            <button class="close-carrito" onclick="toggleCarrito()">&times;</button>
+            <button id="btnCloseCarrito" class="close-carrito" aria-label="Cerrar carrito">&times;</button>
         </div>
         <div class="cliente">
             <input id="nombreCliente" placeholder="Nombre" aria-label="Nombre del cliente">
             <input id="telefonoCliente" placeholder="Teléfono" aria-label="Teléfono del cliente">
             <textarea id="observacionesCliente" placeholder="Dirección / observaciones" aria-label="Observaciones"></textarea>
         </div>
+        <!-- Fixed: Removed h3 wrapping p -->
         <div class="nota">
-         <h3><p>Los precios están sujetos a cambios según disponibilidad e importación.</p></h3>
+            <p>Los precios están sujetos a cambios según disponibilidad e importación.</p>
         </div>
         <table>
             <thead>
@@ -61,9 +60,9 @@
             <h3>Total: <span id="total">$0</span></h3>
         </div>
         <div class="botones">
-            <button class="btn-success" onclick="enviarWhatsApp()">Enviar WhatsApp</button>
-            <button onclick="window.print()">Imprimir PDF</button>
-            <button class="btn-danger" onclick="vaciarCarrito()">Vaciar</button>
+            <button id="btnWhatsApp" class="btn-success">Enviar WhatsApp</button>
+            <button id="btnPrint" onclick="window.print()">Imprimir PDF</button>
+            <button id="btnVaciar" class="btn-danger">Vaciar</button>
         </div>
     </aside>
 
@@ -72,7 +71,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Panel de Administrador</h2>
-                <button class="close-modal" onclick="toggleAdmin()">&times;</button>
+                <button id="btnCloseAdmin" class="close-modal" aria-label="Cerrar admin">&times;</button>
             </div>
             <form id="formProducto">
                 <input type="text" id="adminNombre" placeholder="Nombre del producto" required>
@@ -87,10 +86,8 @@
         </div>
     </div>
 
-    <!-- Back to Top Button -->
+    <!-- Utility Elements -->
     <button id="btnTop" title="Volver arriba">↑</button>
-
-    <!-- Toast Notifications -->
     <div id="toast" class="toast"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
