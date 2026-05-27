@@ -1,19 +1,12 @@
 // ==========================================
 // ⚠️ SECURITY WARNING ⚠️
 // 1. Ensure SUPABASE_KEY is your 'anon' (public) key, NOT a 'service_role' key.
-//    Service role keys bypass Row Level Security (RLS) and give users full admin access!
 // 2. Client-side password checking (admin123) is highly insecure. 
-//    Anyone can view the source code and bypass it. Use Supabase Auth for production.
 // ==========================================
 
 const SUPABASE_URL = 'https://yliohprzqxzpyyrpvlvh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_jWnZtBxthINwZnn2NDS6wg_wour17Cc'; // VERIFY THIS IS YOUR ANON KEY!
 
-// If using ES Modules, uncomment the following line and comment out the CDN script:
-// import { createClient } from '@supabase/supabase-js';
-// const client = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// If using CDN, ensure `supabase` is globally available
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const money = new Intl.NumberFormat('es-CO', {
@@ -44,19 +37,17 @@ const adminModal = document.getElementById("adminModal");
 const formProducto = document.getElementById("formProducto");
 const adminLista = document.getElementById("adminLista");
 const btnTop = document.getElementById("btnTop");
-
-// Added previously missing DOM elements to prevent Null Reference Errors
 const nombreCliente = document.getElementById("nombreCliente");
 const telefonoCliente = document.getElementById("telefonoCliente");
 const observacionesCliente = document.getElementById("observacionesCliente");
 
 // Event Listeners
 btnCarrito.addEventListener("click", toggleCarrito);
-overlay.addEventListener("click", toggleCarrito); // Close cart when clicking overlay
+overlay.addEventListener("click", toggleCarrito);
 btnAdmin.addEventListener("click", toggleAdmin);
 busqueda.addEventListener("input", filtrarProductos);
 filtroCategoria.addEventListener("change", filtrarProductos);
-formProducto.addEventListener("submit", agregarProductoDB); // Changed to match the actual function name
+formProducto.addEventListener("submit", agregarProductoDB);
 window.addEventListener('scroll', () => {
     btnTop.style.display = window.scrollY > 300 ? "block" : "none";
 });
@@ -65,7 +56,23 @@ btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smoo
 // Initialize
 window.onload = () => {
     numCot.textContent = "Cotización #" + Date.now().toString().slice(-6);
-    cargarProductos();
+    cargarProductos().then(() => {
+        // Check if there is a product ID in the URL parameters to auto-scroll
+        const params = new URLSearchParams(window.location.search);
+        const productoId = params.get('producto');
+        
+        if (productoId) {
+            setTimeout(() => {
+                const productoCard = document.querySelector(`[onclick="agregar(${productoId})"]`);
+                if (productoCard) {
+                    const cardContainer = productoCard.closest('.producto');
+                    cardContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    cardContainer.style.boxShadow = "0 0 15px rgba(0, 123, 255, 0.8)";
+                    setTimeout(() => { cardContainer.style.boxShadow = ""; }, 3000);
+                }
+            }, 500);
+        }
+    });
     actualizarCarrito();
 };
 
@@ -88,6 +95,7 @@ async function cargarProductos() {
     productos = data || [];
     cargarCategorias();
     renderProductos(productos);
+    return data; // Return for the .then() in window.onload
 }
 
 function cargarCategorias() {
@@ -104,6 +112,7 @@ function renderProductos(lista) {
         return;
     }
 
+    // ADDED: Share buttons inside product card
     productosDiv.innerHTML = lista.map(p => `
         <div class="producto">
             <div class="img-container">
@@ -114,7 +123,15 @@ function renderProductos(lista) {
                 <h3>${p.nombre}</h3>
                 <p>${p.descripcion || ''}</p>
                 <strong>${money.format(p.precio || 0)}</strong>
-                <button onclick="agregar(${p.id})">Agregar</button>
+                
+                <div class="producto-actions">
+                    <button onclick="agregar(${p.id})">Agregar</button>
+                    <div class="share-buttons">
+                        <button class="btn-share whatsapp" onclick="compartirWhatsApp(${p.id})" title="Compartir en WhatsApp">💬</button>
+                        <button class="btn-share facebook" onclick="compartirFacebook(${p.id})" title="Compartir en Facebook">📘</button>
+                        <button class="btn-share copy" onclick="copiarEnlace(${p.id})" title="Copiar enlace">🔗</button>
+                    </div>
+                </div>
             </div>
         </div>
     `).join('');
@@ -168,8 +185,6 @@ function actualizarCarrito() {
         `;
     }).join('');
 
-    // Note: IVA is hardcoded at 0.19 (19%). If tax rates vary by product, 
-    // you should add an 'iva_rate' column to your database instead.
     const iva = subtotal * 0.19;
     const total = subtotal + iva;
 
@@ -214,7 +229,6 @@ function toggleCarrito() {
 function enviarWhatsApp() {
     if (!carrito.length) return toast("Carrito vacío");
     
-    // Safe checking for DOM elements in case they are missing
     const nombre = nombreCliente ? nombreCliente.value.trim() : "";
     const telefono = telefonoCliente ? telefonoCliente.value.trim() : "";
     const obs = observacionesCliente ? observacionesCliente.value.trim() : "";
@@ -232,16 +246,52 @@ function enviarWhatsApp() {
 
     msg += `\nTOTAL: ${totalEl.textContent}`;
     
-    // Encode the entire URI component to prevent special characters/line breaks from breaking the link
     const encodedMsg = encodeURIComponent(msg);
     window.open(`https://wa.me/573192654225?text=${encodedMsg}`);
+}
+
+// --- SHARE LOGIC (NEW) ---
+function generarEnlaceProducto(productoId) {
+    const baseUrl = window.location.href.split('?')[0];
+    return `${baseUrl}?producto=${productoId}`;
+}
+
+function compartirWhatsApp(id) {
+    const p = productos.find(x => x.id === id);
+    if (!p) return;
+    
+    const url = generarEnlaceProducto(id);
+    const texto = `Mira este producto: ${p.nombre} - ${money.format(p.precio)} ${url}`;
+    const encodedText = encodeURIComponent(texto);
+    
+    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+}
+
+function compartirFacebook(id) {
+    const p = productos.find(x => x.id === id);
+    if (!p) return;
+    
+    const url = generarEnlaceProducto(id);
+    const encodedUrl = encodeURIComponent(url);
+    
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank');
+}
+
+function copiarEnlace(id) {
+    const url = generarEnlaceProducto(id);
+    
+    navigator.clipboard.writeText(url).then(() => {
+        toast("Enlace copiado al portapapeles");
+    }).catch(err => {
+        console.error('Error al copiar el enlace: ', err);
+        toast("Error al copiar el enlace");
+    });
 }
 
 // --- ADMIN LOGIC ---
 function toggleAdmin() {
     const isActive = adminModal.classList.toggle("active");
     if (isActive) {
-        // WARNING: Client-side password check is insecure. Replace with Supabase Auth in production.
         const pass = prompt("Ingrese contraseña de administrador:");
         if (pass !== "admin123") { 
             toast("Contraseña incorrecta");
@@ -283,8 +333,8 @@ async function agregarProductoDB(e) {
     } else {
         toast("Producto agregado exitosamente");
         formProducto.reset();
-        cargarProductos(); // Refresh catalog
-        renderAdminList(); // Refresh admin list
+        cargarProductos();
+        renderAdminList();
     }
 }
 
