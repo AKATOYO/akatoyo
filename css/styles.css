@@ -1,4 +1,4 @@
-/* --- BASE STYLES (Add your existing base styles here) --- */
+/* --- BASE STYLES --- */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -23,6 +23,7 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap; /* Improved: Prevents squishing on small screens */
 }
 
 .header-actions {
@@ -94,7 +95,7 @@ body {
     color: #2c3e50;
 }
 
-/* --- CART & MODAL STYLES (Add your existing styles) --- */
+/* --- CART & MODAL STYLES --- */
 .carrito {
     position: fixed;
     right: -400px;
@@ -107,6 +108,7 @@ body {
     z-index: 1001;
     padding: 20px;
     overflow-y: auto;
+    box-sizing: border-box; /* Added to prevent horizontal scroll on padding */
 }
 
 .carrito.visible {
@@ -164,7 +166,7 @@ button {
 .btn-success { background: #28a745; color: white; }
 .btn-danger { background: #dc3545; color: white; }
 
-/* --- SHARE BUTTONS (NEW) --- */
+/* --- SHARE BUTTONS --- */
 .producto-actions {
     display: flex;
     justify-content: space-between;
@@ -214,9 +216,14 @@ button {
     z-index: 2000;
     left: 50%;
     bottom: 30px;
+    opacity: 0; /* Improved: Add fade transition */
+    transition: opacity 0.3s, visibility 0.3s;
 }
 
-.toast.show { visibility: visible; }
+.toast.show { 
+    visibility: visible; 
+    opacity: 1; 
+}
 
 #btnTop {
     position: fixed;
@@ -230,4 +237,13 @@ button {
     width: 40px;
     height: 40px;
     font-size: 20px;
+}
+
+/* Admin List Item */
+.admin-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
 }
